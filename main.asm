@@ -26,56 +26,47 @@ POS:
 SEGTAB:
 	.db 0x3F,0x06,0x5B,0x4F,0x66,0x6D,0x7D,0x07,0x7F,0x6F
 
-DIGTAB:
-	.db 0b0001, 0b0010, 0b0100, 0b1000
-
 MUX:
 	push r16
-	in	 r16, SREG
-	push r16
+	push r17
+	push r18
 
-	; r18 = TIME[POS]
 	lds r17, POS
 
-	ldi   r31, high(TIME)
-    ldi   r30, low(TIME)
-
-	add r30, r17
-	adc r31, r1
-
+	ldi ZH, HIGH(TIME)
+    ldi ZL, LOW(TIME)
+	add	ZL, r17
+	adc ZH, r1
 	ld	r18, Z
+	out PORTB, r17
 
 	; get segment from SEGTAB
-	ldi	r31, HIGH(SEGTAB)
-	ldi	r30, LOW(SEGTAB)
-	add r30, r18
-	lpm r16, Z
+	ldi	XH, HIGH(SEGTAB)
+	ldi	XL, LOW(SEGTAB)
+	add XL, r18
+	adc XH, r1
+	ld r16, X
 	out PORTA, r16
 
-	; activate digit[POS]
-	ldi     r31, high(DIGTAB)
-    ldi     r30, low(DIGTAB)
-    add     r30, r17        ; Z = &DIGTAB + POS
-    lpm     r16, Z
-    out     PORTB, r16
-
-	; go to next pos
 	inc     r17
     cpi     r17, 4
-    brlo    no_wrap
+	breq	reset_pos
+	rjmp	MUX_END
+reset_pos:
     clr     r17
-no_wrap:
+
+MUX_END:
     sts     POS, r17
 
+	pop	r18
+	pop r17
 	pop	 r16
-	out	 SREG, r16
-	pop  r16
 	reti
 
 BCD:
 	push r16
-	in	 r16, SREG
-	push r16
+	push r17
+	push r18
 
 	; Seconds (0-9)
 	lds	r16, TIME+0
@@ -126,12 +117,16 @@ BCD_S3_CLEAR:
 	sts TIME+3, r16
 
 BCD_RESTORE:
+	pop r18
+	pop r17
 	pop	 r16
-	out	 SREG, r16
-	pop  r16
 	reti
 
 MAIN:
+	clr r1
+	clr   r16
+	sts   POS,   r16
+
 	; Init SP
 	ldi	r16, HIGH(RAMEND)
 	out	SPH, r16
