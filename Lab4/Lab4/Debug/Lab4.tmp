@@ -1,0 +1,61 @@
+<ASSEMBLER_INFO>
+ <VERSION>2.2.8</VERSION>
+ <DEVICE>"ATmega16A"</DEVICE>
+ <WORKING_DIR>c:\users\andreas\Documents\Atmel Studio\7.0\Lab4\Lab4\Debug</WORKING_DIR>
+ <INCLUDE_PATH>
+  <DIR>E:/Program Files\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\avrasm\inc</DIR>
+  <DIR>E:\Program Files\Atmel\Studio\7.0\toolchain\avr8\avrassembler\Include</DIR>
+  <DIR></DIR>
+ </INCLUDE_PATH>
+ <SOURCE_FILE>c:\users\andreas\Documents\Atmel Studio\7.0\Lab4\Lab4\main.asm</SOURCE_FILE>
+ <INCLUDED_FILES>
+  <FILE>E:/Program Files\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\avrasm\inc\m16Adef.inc</FILE>
+ </INCLUDED_FILES>
+ <OBJECT_FILES>
+  <FILE>c:\users\andreas\Documents\Atmel Studio\7.0\Lab4\Lab4\Debug\Lab4.obj</FILE>
+ </OBJECT_FILES>
+ <HEX_FILES>
+  <FILE>Lab4.hex</FILE>
+ </HEX_FILES>
+ <OUTPUT_FILES>
+  <FILE>Lab4.map</FILE>
+  <FILE>Lab4.lss</FILE>
+ </OUTPUT_FILES>
+ <LABELS>
+  <POSX><FILE>c:\users\andreas\Documents\Atmel Studio\7.0\Lab4\Lab4\main.asm</FILE><LINE>21</LINE></POSX>
+  <POSY><FILE>c:\users\andreas\Documents\Atmel Studio\7.0\Lab4\Lab4\main.asm</FILE><LINE>22</LINE></POSY>
+  <TPOSX><FILE>c:\users\andreas\Documents\Atmel Studio\7.0\Lab4\Lab4\main.asm</FILE><LINE>23</LINE></TPOSX>
+  <TPOSY><FILE>c:\users\andreas\Documents\Atmel Studio\7.0\Lab4\Lab4\main.asm</FILE><LINE>24</LINE></TPOSY>
+  <LINE><FILE>c:\users\andreas\Documents\Atmel Studio\7.0\Lab4\Lab4\main.asm</FILE><LINE>25</LINE></LINE>
+  <VMEM><FILE>c:\users\andreas\Documents\Atmel Studio\7.0\Lab4\Lab4\main.asm</FILE><LINE>26</LINE></VMEM>
+  <SEED><FILE>c:\users\andreas\Documents\Atmel Studio\7.0\Lab4\Lab4\main.asm</FILE><LINE>27</LINE></SEED>
+  <START><FILE>c:\users\andreas\Documents\Atmel Studio\7.0\Lab4\Lab4\main.asm</FILE><LINE>53</LINE></START>
+  <MUX><FILE>c:\users\andreas\Documents\Atmel Studio\7.0\Lab4\Lab4\main.asm</FILE><LINE>97</LINE></MUX>
+  <HW_INIT><FILE>c:\users\andreas\Documents\Atmel Studio\7.0\Lab4\Lab4\main.asm</FILE><LINE>254</LINE></HW_INIT>
+  <WARM><FILE>c:\users\andreas\Documents\Atmel Studio\7.0\Lab4\Lab4\main.asm</FILE><LINE>277</LINE></WARM>
+  <RUN><FILE>c:\users\andreas\Documents\Atmel Studio\7.0\Lab4\Lab4\main.asm</FILE><LINE>66</LINE></RUN>
+  <JOYSTICK><FILE>c:\users\andreas\Documents\Atmel Studio\7.0\Lab4\Lab4\main.asm</FILE><LINE>175</LINE></JOYSTICK>
+  <ERASE_VMEM><FILE>c:\users\andreas\Documents\Atmel Studio\7.0\Lab4\Lab4\main.asm</FILE><LINE>357</LINE></ERASE_VMEM>
+  <UPDATE><FILE>c:\users\andreas\Documents\Atmel Studio\7.0\Lab4\Lab4\main.asm</FILE><LINE>215</LINE></UPDATE>
+  <DELAY_MS><FILE>c:\users\andreas\Documents\Atmel Studio\7.0\Lab4\Lab4\main.asm</FILE><LINE>375</LINE></DELAY_MS>
+  <NO_HIT><FILE>c:\users\andreas\Documents\Atmel Studio\7.0\Lab4\Lab4\main.asm</FILE><LINE>92</LINE></NO_HIT>
+  <BEEP><FILE>c:\users\andreas\Documents\Atmel Studio\7.0\Lab4\Lab4\main.asm</FILE><LINE>365</LINE></BEEP>
+  <storeLine><FILE>c:\users\andreas\Documents\Atmel Studio\7.0\Lab4\Lab4\main.asm</FILE><LINE>136</LINE></storeLine>
+  <MUX_EXIT><FILE>c:\users\andreas\Documents\Atmel Studio\7.0\Lab4\Lab4\main.asm</FILE><LINE>160</LINE></MUX_EXIT>
+  <JOY_LIM><FILE>c:\users\andreas\Documents\Atmel Studio\7.0\Lab4\Lab4\main.asm</FILE><LINE>182</LINE></JOY_LIM>
+  <LIMITS><FILE>c:\users\andreas\Documents\Atmel Studio\7.0\Lab4\Lab4\main.asm</FILE><LINE>189</LINE></LIMITS>
+  <POS_LIM><FILE>c:\users\andreas\Documents\Atmel Studio\7.0\Lab4\Lab4\main.asm</FILE><LINE>200</LINE></POS_LIM>
+  <POS_LESS><FILE>c:\users\andreas\Documents\Atmel Studio\7.0\Lab4\Lab4\main.asm</FILE><LINE>206</LINE></POS_LESS>
+  <POS_OK><FILE>c:\users\andreas\Documents\Atmel Studio\7.0\Lab4\Lab4\main.asm</FILE><LINE>208</LINE></POS_OK>
+  <SETPOS><FILE>c:\users\andreas\Documents\Atmel Studio\7.0\Lab4\Lab4\main.asm</FILE><LINE>228</LINE></SETPOS>
+  <SETBIT><FILE>c:\users\andreas\Documents\Atmel Studio\7.0\Lab4\Lab4\main.asm</FILE><LINE>241</LINE></SETBIT>
+  <SETBIT_LOOP><FILE>c:\users\andreas\Documents\Atmel Studio\7.0\Lab4\Lab4\main.asm</FILE><LINE>243</LINE></SETBIT_LOOP>
+  <SETBIT_END><FILE>c:\users\andreas\Documents\Atmel Studio\7.0\Lab4\Lab4\main.asm</FILE><LINE>248</LINE></SETBIT_END>
+  <RANDOM><FILE>c:\users\andreas\Documents\Atmel Studio\7.0\Lab4\Lab4\main.asm</FILE><LINE>304</LINE></RANDOM>
+  <storeY><FILE>c:\users\andreas\Documents\Atmel Studio\7.0\Lab4\Lab4\main.asm</FILE><LINE>331</LINE></storeY>
+  <storeX><FILE>c:\users\andreas\Documents\Atmel Studio\7.0\Lab4\Lab4\main.asm</FILE><LINE>341</LINE></storeX>
+  <delayWait1><FILE>c:\users\andreas\Documents\Atmel Studio\7.0\Lab4\Lab4\main.asm</FILE><LINE>378</LINE></delayWait1>
+  <delayWait2><FILE>c:\users\andreas\Documents\Atmel Studio\7.0\Lab4\Lab4\main.asm</FILE><LINE>383</LINE></delayWait2>
+  <delayNotLast><FILE>c:\users\andreas\Documents\Atmel Studio\7.0\Lab4\Lab4\main.asm</FILE><LINE>396</LINE></delayNotLast>
+ </LABELS>
+</ASSEMBLER_INFO>
