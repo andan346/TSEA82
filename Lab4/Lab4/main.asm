@@ -180,8 +180,59 @@ JOYSTICK:
 
 ;*** 	skriv kod som ökar eller minskar POSX beroende 	***
 ;*** 	på insignalen från A/D-omvandlaren i X-led...	***
+	push r16		; r16 på stacken
+	in r16, SREG
+	push r16		; SREG på stacken
 
+	ldi r16, (1<<REFS0) | AD_CHAN_X
+	out ADMUX, r16
+	sbi ADCSRA, ADSC
+waitX:
+	sbis ADCSRA, ADIF
+	rjmp waitX
+	sbi ADCSRA, ADIF
+	in r16, ADCH
+	andi r16, 0b11000000
+	cpi r16, 0b11000000
+	breq incX
+	cpi r16, 0
+	breq decX
+skipX:
+	rjmp doY
+incX:
+	INCSRAM POSX
+	rjmp skipX
+decX:
+	DECSRAM POSX
+	rjmp skipX
 ;*** 	...och samma för Y-led 				***
+doY:
+	ldi r16, (1<<REFS0) | AD_CHAN_Y
+	out ADMUX, r16
+	sbi ADCSRA, ADSC
+waitY:
+	sbis ADCSRA, ADIF
+	rjmp waitY
+	sbi ADCSRA, ADIF
+	in r16, ADCH
+	andi r16, 0b11000000
+	cpi r16, 0b11000000
+	breq incY
+	cpi r16, 0
+	breq decY
+skipY:
+	rjmp afterXY
+incY:
+	INCSRAM POSY
+	rjmp skipY
+decY:
+	DECSRAM POSY
+	rjmp skipY
+
+afterXY:
+	pop r16
+	out SREG, r16
+	pop r16
 
 JOY_LIM:
 	call	LIMITS		; don't fall off world!
@@ -268,10 +319,18 @@ HW_INIT:
     ldi r16, (1<<ISC01) | (1<<ISC00)
     out MCUCR, r16
 
-	; Init-värden
+	; Sätt PB0-PB7 output
+	ldi r16, $FF
+	out DDRB, r16
+
+	; Sätt PD3-PD5 output, resten input
+	;		 PD76543210
+	ldi r16, 0b00111000
+	out DDRD, r16
+
+	; Sätt PA0-PA7 input
 	clr r16
-    sts LINE, r16
-    sts SEED, r16
+	out DDRA, r16
 	
 	sei			; display on
 	ret
@@ -280,17 +339,23 @@ HW_INIT:
 	; --- WARM start. Set up a new game
 WARM:
 
-; Sätt startposition (POSX,POSY)=(0,2)
+	; Sätt startposition (POSX,POSY)=(0,2)
 	ldi r16, 0
 	sts POSX, r16
 	ldi r16, 2
 	sts POSY, r16
 
+	; Hämta "random" nummer
 	push	r0		
 	push	r0		
-	call	RANDOM		; RANDOM returns x,y on stack
+	call	RANDOM		; RANDOM returns x,y on stack, x överst, y underst
 
-;*** 	Sätt startposition (TPOSX,POSY)				***
+	; Sätt startposition (TPOSX,POSY)
+	pop r16
+	sts TPOSX, r16
+
+	pop r16
+	sts TPOSY, r16
 
 	call	ERASE_VMEM
 	ret
