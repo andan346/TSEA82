@@ -1,8 +1,8 @@
 
-AVRASM ver. 2.2.8  c:\users\andreas\Documents\Atmel Studio\7.0\Lab4\Lab4\main.asm Wed May 14 22:00:12 2025
+AVRASM ver. 2.2.8  X:\Documents\TSEA82\Lab4\Lab4\main.asm Thu May 15 15:02:05 2025
 
-[builtin](2): Including file 'E:/Program Files\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\avrasm\inc\m16Adef.inc'
-[builtin](2): Including file 'E:/Program Files\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\avrasm\inc\m16Adef.inc'
+[builtin](2): Including file 'C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\avrasm\inc\m16Adef.inc'
+[builtin](2): Including file 'C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\avrasm\inc\m16Adef.inc'
                                  
                                  ;
                                  
@@ -929,19 +929,19 @@ AVRASM ver. 2.2.8  c:\users\andreas\Documents\Atmel Studio\7.0\Lab4\Lab4\main.as
 000007 bf0d                      	out SPL, r16
                                  
                                  	; Initialisera hårdvara
-000008 940e 0090                 	call	HW_INIT	
+000008 940e 00cd                 	call	HW_INIT	
                                  	; Initialisera spelet
-00000a 940e 009b                 	call	WARM
+00000a 940e 00d9                 	call	WARM
                                  
                                  ; --- Game loop ---
                                  RUN:
-00000c 940e 005d                 	call	JOYSTICK
-00000e 940e 00c8                 	call	ERASE_VMEM
-000010 940e 0076                 	call	UPDATE
+00000c 940e 0063                 	call	JOYSTICK
+00000e 940e 0108                 	call	ERASE_VMEM
+000010 940e 00b3                 	call	UPDATE
                                  
                                  ; --- Delay ---
 000012 e406                      	ldi r16, GAME_SPEED
-000013 940e 00ca                 	call DELAY_MS
+000013 940e 0121                 	call DELAY_MS
                                  
                                  ; --- Träff? ---
 000015 9100 0060                 	lds r16, POSX
@@ -956,8 +956,8 @@ AVRASM ver. 2.2.8  c:\users\andreas\Documents\Atmel Studio\7.0\Lab4\Lab4\main.as
                                  
                                  ; --- Träff ---
 000021 e604                      	ldi	r16,BEEP_LENGTH
-000022 940e 00c9                 	call	BEEP
-000024 940e 009b                 	call	WARM
+000022 940e 0110                 	call	BEEP
+000024 940e 00d9                 	call	WARM
                                  
                                  ; --- Ej träff ---
                                  NO_HIT:
@@ -978,7 +978,7 @@ AVRASM ver. 2.2.8  c:\users\andreas\Documents\Atmel Studio\7.0\Lab4\Lab4\main.as
                                  
                                  	; --- Initiera pekare
 000030 e6e5                      	ldi ZL, LOW(VMEM)
-000031 27ff                      	clr ZH
+000031 e0f0                      	ldi ZH, HIGH(VMEM)
                                  
                                  	; --- Läs LINE
 000032 9100 0064                 	lds r16, LINE
@@ -994,53 +994,64 @@ AVRASM ver. 2.2.8  c:\users\andreas\Documents\Atmel Studio\7.0\Lab4\Lab4\main.as
 00003a 2b21                      	or   r18, r17			; r18 = PD3-PD5
 00003b bb22                      	out  PORTD, r18			; PD3-PD5 bestämmer rad på matrismodulen
                                  	; Släck kolumner
-00003c 2722                      	clr  r18
-00003d bb28                      	out  PORTB, r18			; Sätt hela PB till låg
+00003c b328                      	in   r18, PORTB			; kopiera PORTB
+00003d 7820                      	andi r18, 0b10000000	; behåll PB7, släck resten
+00003e bb28                      	out  PORTB, r18			; PB0-PB6 innehåller en kolumn på matrismodulen
                                  
                                  	; --- LINE++ (0-4 loop)
-00003e 9503                      	inc  r16
-00003f 3005                      	cpi  r16, VMEM_SZ
-000040 f008                      	brlo storeLine
-000041 2700                      	clr  r16
+00003f 9503                      	inc  r16
+000040 3005                      	cpi  r16, VMEM_SZ
+000041 f008                      	brlo storeLine
+000042 2700                      	clr  r16
                                  
                                  	; --- Spara LINE
                                  storeLine:
-000042 9300 0064                 	sts LINE, r16
+000043 9300 0064                 	sts LINE, r16
+                                 
+                                 	; Allt funkar ovan ^^^^
                                  
                                  	; --- Läs VMEM[LINE]
-000044 0fe0                      	add ZL, r16
-000045 8110                      	ld  r17, Z
+000045 2711                      	clr r17
+000046 0fe0                      	add ZL, r16
+000047 1ff1                      	adc ZH, r17
+000048 8110                      	ld  r17, Z
                                  
                                  	; -- Tänd DISP[LINE]
                                  	; Välj rad
-000046 2f20                      	mov  r18, r16			; r18 = LINE
-000047 0f22                      	lsl  r18				; * flytta bitarna till de pinnar de kommer sitta på
-000048 0f22                      	lsl  r18				; *
-000049 0f22                      	lsl  r18				; * bit0 -> PD3
-00004a b332                      	in   r19, PORTD			; kopiera PORTD
-00004b 7c37                      	andi r19, 0b11000111	; maskera PD3-PD5
-00004c 2b32                      	or   r19, r18			; r19 = PD3-PD5
-00004d bb32                      	out  PORTD, r19			; PD3-PD5 bestämmer rad på matrismodulen
+000049 2f20                      	mov  r18, r16			; r18 = LINE
+00004a 0f22                      	lsl  r18				; * flytta bitarna till de pinnar de kommer sitta på
+00004b 0f22                      	lsl  r18				; *
+00004c 0f22                      	lsl  r18				; * bit0 -> PD3
+00004d b332                      	in   r19, PORTD			; kopiera PORTD
+00004e 7c37                      	andi r19, 0b11000111	; maskera PD3-PD5
+00004f 2b32                      	or   r19, r18			; r19 = PD3-PD5
+000050 bb32                      	out  PORTD, r19			; PD3-PD5 bestämmer rad på matrismodulen
                                  	; Tänd rad enligt r17 = VMEM[LINE]
-00004e bb18                      	out  PORTB, r17
+000051 b328                      	in   r18, PORTB			; kopiera PORTB
+000052 7820                      	andi r18, 0b10000000	; behåll PB7
+000053 2b12                      	or   r17, r18			; sätt resten till r17 = VMEM[LINE]
+000054 bb18                      	out  PORTB, r17			; PB0-PB6 innehåller en kolumn på matrismodulen
+                                 
+                                 	;ldi r17, $FF
+                                 	;out PORTB, r17
                                  
                                  	; --- SEED++
-00004f 9100 006a
-000051 9503
-000052 9300 006a                 	INCSRAM SEED
+000055 9100 006a
+000057 9503
+000058 9300 006a                 	INCSRAM SEED
                                  
                                  	; --- Återställ kontext
                                  MUX_EXIT:
-000054 91ff                      	pop ZH			; Återställ ZH.
-000055 91ef                      	pop ZL			; Återställ ZL.
-000056 913f                      	pop r19			; Återställ r19.
-000057 912f                      	pop r18			; Återställ r18.
-000058 911f                      	pop r17			; Återställ r17.
-000059 910f                      	pop r16			; Ta fram statusregistret
-00005a bf0f                      	out SREG, r16	; från r16 och återställ det.
-00005b 910f                      	pop r16			; Återställ r16.
+00005a 91ff                      	pop ZH			; Återställ ZH.
+00005b 91ef                      	pop ZL			; Återställ ZL.
+00005c 913f                      	pop r19			; Återställ r19.
+00005d 912f                      	pop r18			; Återställ r18.
+00005e 911f                      	pop r17			; Återställ r17.
+00005f 910f                      	pop r16			; Ta fram statusregistret
+000060 bf0f                      	out SREG, r16	; från r16 och återställ det.
+000061 910f                      	pop r16			; Återställ r16.
                                  
-00005c 9518                      	reti
+000062 9518                      	reti
                                  		
                                  	; ---------------------------------------
                                  	; --- JOYSTICK Sense stick and update POSX, POSY
@@ -1049,77 +1060,130 @@ AVRASM ver. 2.2.8  c:\users\andreas\Documents\Atmel Studio\7.0\Lab4\Lab4\main.as
                                  
                                  ;*** 	skriv kod som ökar eller minskar POSX beroende 	***
                                  ;*** 	på insignalen från A/D-omvandlaren i X-led...	***
+000063 930f                      	push r16		; r16 på stacken
+000064 b70f                      	in r16, SREG
+000065 930f                      	push r16		; SREG på stacken
+000066 931f                      	push r17
                                  
-                                 ;*** 	...och samma för Y-led 				***
-                                 
+                                 JOY_X:
+000067 e400                      	ldi r16, (1<<REFS0) | AD_CHAN_X
+000068 940e 00a6                 	call ADC10
+                                 JOY_DEC_X:
+00006a 3010                      	cpi r17, 0b00
+00006b f429                      	brne JOY_INC_X
+00006c 9100 0060
+00006e 950a
+00006f 9300 0060                 	DECSRAM POSX
+                                 JOY_INC_X:
+000071 3013                      	cpi r17, 0b11
+000072 f429                      	brne JOY_Y
+000073 9100 0060
+000075 9503
+000076 9300 0060                 	INCSRAM POSX
+                                 JOY_Y:
+000078 e401                      	ldi r16, (1<<REFS0) | AD_CHAN_Y
+000079 940e 00a6                 	call ADC10
+                                 JOY_DEC_Y:
+00007b 3010                      	cpi r17, 0b00
+00007c f429                      	brne JOY_INC_Y
+00007d 9100 0061
+00007f 950a
+000080 9300 0061                 	DECSRAM POSY
+                                 JOY_INC_Y:
+000082 3013                      	cpi r17, 0b11
+000083 f429                      	brne JOY_LIM
+000084 9100 0061
+000086 9503
+000087 9300 0061                 	INCSRAM POSY
                                  JOY_LIM:
-00005d 940e 0060                 	call	LIMITS		; don't fall off world!
-00005f 9508                      	ret
+000089 940e 0090                 	call	LIMITS		; don't fall off world!
+00008b 911f                      	pop r17
+00008c 910f                      	pop r16
+00008d bf0f                      	out SREG, r16
+00008e 910f                      	pop r16
+00008f 9508                      	ret
                                  
                                  	; ---------------------------------------
                                  	; --- LIMITS Limit POSX,POSY coordinates	
                                  	; --- Uses r16,r17
                                  LIMITS:
-000060 9100 0060                 	lds	r16,POSX	; variable
-000062 e017                      	ldi	r17,7		; upper limit+1
-000063 940e 006f                 	call	POS_LIM		; actual work
-000065 9300 0060                 	sts	POSX,r16
-000067 9100 0061                 	lds	r16,POSY	; variable
-000069 e015                      	ldi	r17,5		; upper limit+1
-00006a 940e 006f                 	call	POS_LIM		; actual work
-00006c 9300 0061                 	sts	POSY,r16
-00006e 9508                      	ret
+000090 9100 0060                 	lds	r16,POSX	; variable
+000092 e017                      	ldi	r17,7		; upper limit+1
+000093 940e 009f                 	call	POS_LIM		; actual work
+000095 9300 0060                 	sts	POSX,r16
+000097 9100 0061                 	lds	r16,POSY	; variable
+000099 e015                      	ldi	r17,5		; upper limit+1
+00009a 940e 009f                 	call	POS_LIM		; actual work
+00009c 9300 0061                 	sts	POSY,r16
+00009e 9508                      	ret
                                  
                                  POS_LIM:
-00006f 6000                      	ori	r16,0		; negative?
-000070 f01a                      	brmi	POS_LESS	; POSX neg => add 1
-000071 1701                      	cp	r16,r17		; past edge
-000072 f411                      	brne	POS_OK
-000073 5002                      	subi	r16,2
+00009f 6000                      	ori	r16,0		; negative?
+0000a0 f01a                      	brmi	POS_LESS	; POSX neg => add 1
+0000a1 1701                      	cp	r16,r17		; past edge
+0000a2 f411                      	brne	POS_OK
+0000a3 5002                      	subi	r16,2
                                  POS_LESS:
-000074 9503                      	inc	r16	
+0000a4 9503                      	inc	r16	
                                  POS_OK:
-000075 9508                      	ret
+0000a5 9508                      	ret
+                                 
+                                 ADC10:
+0000a6 b907                      	out ADMUX, r16
+0000a7 e800                      	ldi r16, (1<<ADEN)
+0000a8 6007                      	ori r16, (1<<ADPS2)|(1<<ADPS1)|(1<<ADPS0)
+0000a9 b906                      	out ADCSRA, r16
+                                 ADC10_CONVERT:
+0000aa b106                      	in r16, ADCSRA
+0000ab 6400                      	ori r16, (1<<ADSC)
+0000ac b906                      	out ADCSRA, r16
+                                 ADC10_WAIT:
+0000ad b106                      	in r16, ADCSRA
+0000ae fd06                      	sbrc r16, ADSC
+0000af cffd                      	rjmp ADC10_WAIT
+0000b0 b104                      	in r16, ADCL
+0000b1 b115                      	in r17, ADCH
+0000b2 9508                      	ret
                                  
                                  	; ---------------------------------------
                                  	; --- UPDATE VMEM
                                  	; --- with POSX/Y, TPOSX/Y
                                  	; --- Uses r16, r17
                                  UPDATE:	
-000076 27ff                      	clr	ZH 
-000077 e6e0                      	ldi	ZL,LOW(POSX)
-000078 940e 007f                 	call 	SETPOS
-00007a 27ff                      	clr	ZH
-00007b e6e2                      	ldi	ZL,LOW(TPOSX)
-00007c 940e 007f                 	call	SETPOS
-00007e 9508                      	ret
+0000b3 27ff                      	clr	ZH 
+0000b4 e6e0                      	ldi	ZL,LOW(POSX)
+0000b5 940e 00bc                 	call 	SETPOS
+0000b7 27ff                      	clr	ZH
+0000b8 e6e2                      	ldi	ZL,LOW(TPOSX)
+0000b9 940e 00bc                 	call	SETPOS
+0000bb 9508                      	ret
                                  
                                  	; --- SETPOS Set bit pattern of r16 into *Z
                                  	; --- Uses r16, r17
                                  	; --- 1st call Z points to POSX at entry and POSY at exit
                                  	; --- 2nd call Z points to TPOSX at entry and TPOSY at exit
                                  SETPOS:
-00007f 9111                      	ld	r17,Z+  	; r17=POSX
-000080 940e 0089                 	call	SETBIT		; r16=bitpattern for VMEM+POSY
-000082 8110                      	ld	r17,Z		; r17=POSY Z to POSY
-000083 e6e5                      	ldi	ZL,LOW(VMEM)
-000084 0fe1                      	add	ZL,r17		; *(VMEM+T/POSY) ZL=VMEM+0..4
-000085 8110                      	ld	r17,Z		; current line in VMEM
-000086 2b10                      	or	r17,r16		; OR on place
-000087 8310                      	st	Z,r17		; put back into VMEM
-000088 9508                      	ret
+0000bc 9111                      	ld	r17,Z+  	; r17=POSX
+0000bd 940e 00c6                 	call	SETBIT		; r16=bitpattern for VMEM+POSY
+0000bf 8110                      	ld	r17,Z		; r17=POSY Z to POSY
+0000c0 e6e5                      	ldi	ZL,LOW(VMEM)
+0000c1 0fe1                      	add	ZL,r17		; *(VMEM+T/POSY) ZL=VMEM+0..4
+0000c2 8110                      	ld	r17,Z		; current line in VMEM
+0000c3 2b10                      	or	r17,r16		; OR on place
+0000c4 8310                      	st	Z,r17		; put back into VMEM
+0000c5 9508                      	ret
                                  	
                                  	; --- SETBIT Set bit r17 on r16
                                  	; --- Uses r16, r17
                                  SETBIT:
-000089 e001                      	ldi	r16,$01		; bit to shift
+0000c6 e001                      	ldi	r16,$01		; bit to shift
                                  SETBIT_LOOP:
-00008a 951a                      	dec 	r17			
-00008b f01a                      	brmi 	SETBIT_END	; til done
-00008c 0f00                      	lsl 	r16		; shift
-00008d 940c 008a                 	jmp 	SETBIT_LOOP
+0000c7 951a                      	dec 	r17			
+0000c8 f01a                      	brmi 	SETBIT_END	; til done
+0000c9 0f00                      	lsl 	r16		; shift
+0000ca 940c 00c7                 	jmp 	SETBIT_LOOP
                                  SETBIT_END:
-00008f 9508                      	ret
+0000cc 9508                      	ret
                                  
                                  	; ---------------------------------------
                                  	; --- Hardware init
@@ -1131,38 +1195,52 @@ AVRASM ver. 2.2.8  c:\users\andreas\Documents\Atmel Studio\7.0\Lab4\Lab4\main.as
                                  ;*** 	flanktriggat avbrott på INT0 (PD2).			***
                                  
                                  	; Initiera INT0
-000090 e400                      	ldi	r16, (1<<INT0)
-000091 bf0b                      	out	GICR, r16
+0000cd e400                      	ldi	r16, (1<<INT0)
+0000ce bf0b                      	out	GICR, r16
                                  	; Stigande flank: ISC01=1, ISC00=1
-000092 e003                          ldi r16, (1<<ISC01) | (1<<ISC00)
-000093 bf05                          out MCUCR, r16
+0000cf e003                          ldi r16, (1<<ISC01) | (1<<ISC00)
+0000d0 bf05                          out MCUCR, r16
                                  
-                                 	; Init-värden
-000094 2700                      	clr r16
-000095 9300 0064                     sts LINE, r16
-000097 9300 006a                     sts SEED, r16
+                                 	; Sätt PB0-PB7 output
+0000d1 ef0f                      	ldi r16, $FF
+0000d2 bb07                      	out DDRB, r16
+                                 
+                                 	; Sätt PD3-PD5 output, resten input
+                                 	;		 PD76543210
+0000d3 e308                      	ldi r16, 0b00111000
+0000d4 bb01                      	out DDRD, r16
+                                 
+                                 	; Sätt PA0-PA7 input
+0000d5 ef0c                      	ldi r16, 0b11111100
+0000d6 bb0a                      	out DDRA, r16
                                  	
-000099 9478                      	sei			; display on
-00009a 9508                      	ret
+0000d7 9478                      	sei			; display on
+0000d8 9508                      	ret
                                  
                                  	; ---------------------------------------
                                  	; --- WARM start. Set up a new game
                                  WARM:
                                  
-                                 ; Sätt startposition (POSX,POSY)=(0,2)
-00009b e000                      	ldi r16, 0
-00009c 9300 0060                 	sts POSX, r16
-00009e e002                      	ldi r16, 2
-00009f 9300 0061                 	sts POSY, r16
+                                 	; Sätt startposition (POSX,POSY)=(0,2)
+0000d9 e000                      	ldi r16, 0
+0000da 9300 0060                 	sts POSX, r16
+0000dc e002                      	ldi r16, 2
+0000dd 9300 0061                 	sts POSY, r16
                                  
-0000a1 920f                      	push	r0		
-0000a2 920f                      	push	r0		
-0000a3 940e 00a8                 	call	RANDOM		; RANDOM returns x,y on stack
+                                 	; Hämta "random" nummer
+0000df 920f                      	push	r0		
+0000e0 920f                      	push	r0		
+0000e1 940e 00ec                 	call	RANDOM		; RANDOM returns x,y on stack, x överst, y underst
                                  
-                                 ;*** 	Sätt startposition (TPOSX,POSY)				***
+                                 	; Sätt startposition (TPOSX,POSY)
+0000e3 910f                      	pop r16
+0000e4 9300 0062                 	sts TPOSX, r16
                                  
-0000a5 940e 00c8                 	call	ERASE_VMEM
-0000a7 9508                      	ret
+0000e6 910f                      	pop r16
+0000e7 9300 0063                 	sts TPOSY, r16
+                                 
+0000e9 940e 0108                 	call	ERASE_VMEM
+0000eb 9508                      	ret
                                  
                                  	; ---------------------------------------
                                  	; --- RANDOM generate TPOSX, TPOSY
@@ -1175,52 +1253,87 @@ AVRASM ver. 2.2.8  c:\users\andreas\Documents\Atmel Studio\7.0\Lab4\Lab4\main.as
                                  	; ---	pop TPOSY
                                  	; --- Uses r16
                                  RANDOM:
+                                 /*
                                  	; -- Spara kontext
-0000a8 930f                      	push r16
-0000a9 931f                      	push r17
-0000aa 93ef                      	push ZL
-0000ab 93ff                      	push ZH
+                                 	push r16
+                                 	push r17
+                                 	push ZL
+                                 	push ZH
                                  
                                  	; -- Kopiera stackpekare till Z
-0000ac b70e                      	in	r16, SPH
-0000ad 2ff0                      	mov	ZH, r16
-0000ae b70d                      	in	r16, SPL
-0000af 2fe0                      	mov	ZL, r16
+                                 	in	r16, SPH
+                                 	mov	ZH, r16
+                                 	in	r16, SPL
+                                 	mov	ZL, r16
                                  
                                  	; --- Flytta Z utanför stackpeckaren för bättre "slumpmässighet"
-0000b0 95e3                      	inc ZL
-0000b1 95e3                      	inc ZL
-0000b2 95e3                      	inc ZL
+                                 	inc ZL
+                                 	inc ZL
+                                 	inc ZL
                                  
                                  	; -- Läs SEED
-0000b3 9100 006a                 	lds	r16, SEED
+                                 	lds	r16, SEED
                                  
                                  	; -- TPOSY [0..4]
-0000b5 2f10                      	mov  r17, r16
-0000b6 7017                      	andi r17, 7		; [0..7]
-0000b7 3015                      	cpi  r17, 5		
-0000b8 f00c                      	brlt storeY
-0000b9 5013                      	subi r17, 3		; [0..4]
+                                 	mov  r17, r16
+                                 	andi r17, 7		; [0..7]
+                                 	cpi  r17, 5		
+                                 	brlt storeY
+                                 	subi r17, 3		; [0..4]
                                  storeY:
-0000ba 9311                      	st   Z+, r17
+                                 	st   Z+, r17
                                  
                                  	; -- TPOSX [2..6]
-0000bb 2f10                      	mov  r17, r16
-0000bc 1f11                      	rol  r17		; rotera SEED för att få ett annorlunda tal
-0000bd 7017                      	andi r17, 7		; [0..7]
-0000be 3015                      	cpi  r17, 5
-0000bf f00c                      	brlt storeX
-0000c0 5014                      	subi r17, 4		; [0..4]
+                                 	mov  r17, r16
+                                 	rol  r17		; rotera SEED för att få ett annorlunda tal
+                                 	andi r17, 7		; [0..7]
+                                 	cpi  r17, 5
+                                 	brlt storeX
+                                 	subi r17, 4		; [0..4]
                                  storeX:
-0000c1 5f1e                      	subi r17, -2	; [2..6]
-0000c2 8310                      	st   Z, r17
+                                 	subi r17, -2	; [2..6]
+                                 	st   Z, r17
                                  
                                  	; -- Återställ kontext
-0000c3 91ff                      	pop ZH
-0000c4 91ef                      	pop ZL
-0000c5 911f                      	pop r17
-0000c6 910f                      	pop r16
-0000c7 9508                      	ret
+                                 	pop ZH
+                                 	pop ZL
+                                 	pop r17
+                                 	pop r16
+                                 	ret
+                                 	*/
+                                 
+0000ec 2400                      	clr r0
+0000ed b70e                      	in	r16,SPH
+0000ee 2ff0                      	mov	ZH,r16
+0000ef b70d                      	in	r16,SPL
+0000f0 2fe0                      	mov	ZL,r16
+0000f1 9100 006a                 	lds	r16,SEED
+0000f3 2f10                      	mov r17, r16
+0000f4 7007                      	andi r16, 0b00000111
+0000f5 701e                      	andi r17, 0b00001110
+0000f6 9516                      	lsr r17
+                                 	; r16 for TPOSX
+                                 	; r17 for TPOSY
+0000f7 3004                      	cpi r16, 4
+0000f8 f00c                      	brlt NORMAL_X
+0000f9 5004                      	subi r16, 4
+                                 NORMAL_X:
+0000fa 3014                      	cpi r17, 4
+0000fb f00c                      	brlt NORMAL_Y
+0000fc 5014                      	subi r17, 4
+                                 NORMAL_Y:
+0000fd e022                      	ldi r18, 2
+0000fe 0f02                      	add r16, r18
+0000ff e023                      	ldi r18, 3
+                                 	; add r16 to highest r0 in stack
+000100 0fe2                      	add ZL, r18
+000101 1df0                      	adc ZH, r0
+000102 8300                      	st Z, r16
+000103 e021                      	ldi r18, 1
+000104 0fe2                      	add ZL, r18
+000105 1df0                      	adc ZH, r0
+000106 8310                      	st Z, r17
+000107 9508                      	ret
                                  
                                  
                                  	; ---------------------------------------
@@ -1229,17 +1342,43 @@ AVRASM ver. 2.2.8  c:\users\andreas\Documents\Atmel Studio\7.0\Lab4\Lab4\main.as
                                  	
                                  ERASE_VMEM:
                                  
-                                 ;*** 	Radera videominnet						***
+000108 e6e5                      	ldi ZL, LOW(VMEM)
+000109 e0f0                      	ldi ZH, HIGH(VMEM)
                                  
-0000c8 9508                      	ret
+00010a e005                      	ldi r16, VMEM_SZ
+00010b 2411                      	clr r1
+                                 
+                                 eraseLoop:
+00010c 9211                      	st Z+, r1
+00010d 950a                      	dec r16
+00010e f7e9                      	brne eraseLoop
+                                 
+00010f 9508                      	ret
                                  
                                  	; ---------------------------------------
                                  	; --- BEEP(r16) r16 half cycles of BEEP-PITCH
-                                 BEEP:	
-                                 
-                                 ;*** skriv kod för ett ljud som ska markera träff 	***
-                                 
-0000c9 9508                      	ret
+                                 BEEP:
+000110 9506                      	lsr r16
+                                 BEEP_LOOP:
+000111 9ac7                      	sbi PORTB, 7
+000112 d004                      	rcall BEEP_DELAY
+000113 950a                      	dec r16
+000114 f7e1                      	brne BEEP_LOOP
+000115 98c7                      	cbi PORTB, 7
+000116 9508                          ret
+                                 BEEP_DELAY:
+000117 931f                      	push r17
+000118 e114                      	ldi r17, BEEP_PITCH
+                                 dly_H:
+000119 951a                      	dec r17
+00011a f7f1                      	brne dly_H
+00011b 98c7                      	cbi PORTB, 7
+00011c e114                      	ldi r17, BEEP_PITCH
+                                 dly_L:
+00011d 951a                      	dec r17
+00011e f7f1                      	brne dly_L
+00011f 911f                      	pop r17
+000120 9508                      	ret
                                  
                                  	; ---------------------------------------
                                  	; --- DELAY_MS(r16) väntar r16 ms.
@@ -1247,28 +1386,28 @@ AVRASM ver. 2.2.8  c:\users\andreas\Documents\Atmel Studio\7.0\Lab4\Lab4\main.as
                                  	; --- Använder r16, r17
                                  DELAY_MS:
                                  
-0000ca ef1f                      	ldi r17, $FF		; 1 * 1 = 1
+000121 ef1f                      	ldi r17, $FF		; 1 * 1 = 1
                                  delayWait1:
-0000cb 951a                      	dec r17				; 1 * 255 = 255
-0000cc f7f1                      	brne delayWait1		; 2 * 254 + 1 * 1 = 509
+000122 951a                      	dec r17				; 1 * 255 = 255
+000123 f7f1                      	brne delayWait1		; 2 * 254 + 1 * 1 = 509
                                  
-0000cd e41c                      	ldi r17, $4C		; 1 * 1 = 1
+000124 e41c                      	ldi r17, $4C		; 1 * 1 = 1
                                  delayWait2:
-0000ce 951a                      	dec r17				; 1 * 76 = 76
-0000cf f7f1                      	brne delayWait2 	; 2 * 75 + 1 * 1 = 151
+000125 951a                      	dec r17				; 1 * 76 = 76
+000126 f7f1                      	brne delayWait2 	; 2 * 75 + 1 * 1 = 151
                                  
                                  ; Härvid 993 cykler
-0000d0 950a                      	dec r16				; +1
-0000d1 f411                      	brne delayNotLast	; +2 (tagen) eller +1 (ej tagen)
+000127 950a                      	dec r16				; +1
+000128 f411                      	brne delayNotLast	; +2 (tagen) eller +1 (ej tagen)
                                  
                                  ; Härvid 995 cykler
-0000d2 0000                      	nop					; +1
-0000d3 9508                      	ret					; +4 => 1000 cykler, KLAR!
+000129 0000                      	nop					; +1
+00012a 9508                      	ret					; +4 => 1000 cykler, KLAR!
                                  
                                  ; Härvid 996 cykler
                                  delayNotLast:
-0000d4 0000                      	nop					; +1
-0000d5 0000                      	nop					; +1
+00012b 0000                      	nop					; +1
+00012c 0000                      	nop					; +1
 
 
 RESOURCE USE INFORMATION
@@ -1286,39 +1425,39 @@ counted separately from r26..r31 here.
 .dseg memory usage only counts static data declared with .byte
 
 "ATmega16A" register use summary:
-x  :   0 y  :   0 z  :   7 r0 :   2 r1 :   0 r2 :   0 r3 :   0 r4 :   0 
+x  :   0 y  :   0 z  :   8 r0 :   5 r1 :   2 r2 :   0 r3 :   0 r4 :   0 
 r5 :   0 r6 :   0 r7 :   0 r8 :   0 r9 :   0 r10:   0 r11:   0 r12:   0 
-r13:   0 r14:   0 r15:   0 r16:  59 r17:  41 r18:  13 r19:   6 r20:   0 
+r13:   0 r14:   0 r15:   0 r16: 102 r17:  49 r18:  23 r19:   6 r20:   0 
 r21:   0 r22:   0 r23:   0 r24:   0 r25:   0 r26:   0 r27:   0 r28:   0 
-r29:   0 r30:  14 r31:   8 
-Registers used: 8 out of 35 (22.9%)
+r29:   0 r30:  12 r31:  10 
+Registers used: 9 out of 35 (25.7%)
 
 "ATmega16A" instruction use summary:
-.lds  :   0 .sts  :   0 adc   :   0 add   :   2 adiw  :   0 and   :   0 
-andi  :   4 asr   :   0 bclr  :   0 bld   :   0 brbc  :   0 brbs  :   0 
+.lds  :   0 .sts  :   0 adc   :   3 add   :   5 adiw  :   0 and   :   0 
+andi  :   6 asr   :   0 bclr  :   0 bld   :   0 brbc  :   0 brbs  :   0 
 brcc  :   0 brcs  :   0 break :   0 breq  :   0 brge  :   0 brhc  :   0 
 brhs  :   0 brid  :   0 brie  :   0 brlo  :   1 brlt  :   2 brmi  :   2 
-brne  :   6 brpl  :   0 brsh  :   0 brtc  :   0 brts  :   0 brvc  :   0 
-brvs  :   0 bset  :   0 bst   :   0 call  :  16 cbi   :   0 cbr   :   0 
+brne  :  14 brpl  :   0 brsh  :   0 brtc  :   0 brts  :   0 brvc  :   0 
+brvs  :   0 bset  :   0 bst   :   0 call  :  18 cbi   :   2 cbr   :   0 
 clc   :   0 clh   :   0 cli   :   0 cln   :   0 clr   :   6 cls   :   0 
 clt   :   0 clv   :   0 clz   :   0 com   :   0 cp    :   3 cpc   :   0 
-cpi   :   3 cpse  :   0 dec   :   4 eor   :   0 fmul  :   0 fmuls :   0 
-fmulsu:   0 icall :   0 ijmp  :   0 in    :   5 inc   :   6 jmp   :   4 
-ld    :   4 ldd   :   0 ldi   :  17 lds   :   9 lpm   :   0 lsl   :   7 
-lsr   :   0 mov   :   6 movw  :   0 mul   :   0 muls  :   0 mulsu :   0 
-neg   :   0 nop   :   3 or    :   3 ori   :   1 out   :   9 pop   :  11 
-push  :  13 rcall :   0 ret   :  12 reti  :   1 rjmp  :   1 rol   :   1 
-ror   :   0 sbc   :   0 sbci  :   0 sbi   :   0 sbic  :   0 sbis  :   0 
-sbiw  :   0 sbr   :   0 sbrc  :   0 sbrs  :   0 sec   :   0 seh   :   0 
+cpi   :   7 cpse  :   0 dec   :  10 eor   :   0 fmul  :   0 fmuls :   0 
+fmulsu:   0 icall :   0 ijmp  :   0 in    :  12 inc   :   5 jmp   :   4 
+ld    :   4 ldd   :   0 ldi   :  32 lds   :  13 lpm   :   0 lsl   :   7 
+lsr   :   2 mov   :   5 movw  :   0 mul   :   0 muls  :   0 mulsu :   0 
+neg   :   0 nop   :   3 or    :   4 ori   :   3 out   :  16 pop   :  13 
+push  :  13 rcall :   1 ret   :  14 reti  :   1 rjmp  :   2 rol   :   0 
+ror   :   0 sbc   :   0 sbci  :   0 sbi   :   1 sbic  :   0 sbis  :   0 
+sbiw  :   0 sbr   :   0 sbrc  :   1 sbrs  :   0 sec   :   0 seh   :   0 
 sei   :   1 sen   :   0 ser   :   0 ses   :   0 set   :   0 sev   :   0 
-sez   :   0 sleep :   0 spm   :   0 st    :   3 std   :   0 sts   :   8 
-sub   :   0 subi  :   4 swap  :   0 tst   :   0 wdr   :   0 
-Instructions used: 33 out of 113 (29.2%)
+sez   :   0 sleep :   0 spm   :   0 st    :   4 std   :   0 sts   :  12 
+sub   :   0 subi  :   3 swap  :   0 tst   :   0 wdr   :   0 
+Instructions used: 38 out of 113 (33.6%)
 
 "ATmega16A" memory use summary [bytes]:
 Segment   Begin    End      Code   Data   Used    Size   Use%
 ---------------------------------------------------------------
-[.cseg] 0x000000 0x0001ae    430      0    430   16384   2.6%
+[.cseg] 0x000000 0x00025c    604      0    604   16384   3.7%
 [.dseg] 0x000060 0x00006b      0     11     11    1024   1.1%
 [.eseg] 0x000000 0x000000      0      0      0     512   0.0%
 

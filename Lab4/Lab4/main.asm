@@ -4,6 +4,8 @@
 ; Created: 2025-05-14 13:23:48
 ; Author : andan346
 ;
+; TODO: 1: förstå RANDOM, möjlig omskrivning.
+;		2: fixa BEEP
 
 
 	.equ	VMEM_SZ     = 5		; #rows on display
@@ -107,7 +109,7 @@ MUX:
 
 	; --- Initiera pekare
 	ldi ZL, LOW(VMEM)
-	clr ZH
+	ldi ZH, HIGH(VMEM)
 
 	; --- Läs LINE
 	lds r16, LINE
@@ -137,8 +139,12 @@ MUX:
 storeLine:
 	sts LINE, r16
 
+	; Allt funkar ovan ^^^^
+
 	; --- Läs VMEM[LINE]
+	clr r17
 	add ZL, r16
+	adc ZH, r17
 	ld  r17, Z
 
 	; -- Tänd DISP[LINE]
@@ -156,6 +162,9 @@ storeLine:
 	andi r18, 0b10000000	; behåll PB7
 	or   r17, r18			; sätt resten till r17 = VMEM[LINE]
 	out  PORTB, r17			; PB0-PB6 innehåller en kolumn på matrismodulen
+
+	;ldi r17, $FF
+	;out PORTB, r17
 
 	; --- SEED++
 	INCSRAM SEED
@@ -183,59 +192,36 @@ JOYSTICK:
 	push r16		; r16 på stacken
 	in r16, SREG
 	push r16		; SREG på stacken
+	push r17
 
+JOY_X:
 	ldi r16, (1<<REFS0) | AD_CHAN_X
-	out ADMUX, r16
-	sbi ADCSRA, ADSC
-waitX:
-	sbis ADCSRA, ADIF
-	rjmp waitX
-	sbi ADCSRA, ADIF
-	in r16, ADCH
-	andi r16, 0b11000000
-	cpi r16, 0b11000000
-	breq incX
-	cpi r16, 0
-	breq decX
-skipX:
-	rjmp doY
-incX:
-	INCSRAM POSX
-	rjmp skipX
-decX:
+	call ADC10
+JOY_DEC_X:
+	cpi r17, 0b00
+	brne JOY_INC_X
 	DECSRAM POSX
-	rjmp skipX
-;*** 	...och samma för Y-led 				***
-doY:
+JOY_INC_X:
+	cpi r17, 0b11
+	brne JOY_Y
+	INCSRAM POSX
+JOY_Y:
 	ldi r16, (1<<REFS0) | AD_CHAN_Y
-	out ADMUX, r16
-	sbi ADCSRA, ADSC
-waitY:
-	sbis ADCSRA, ADIF
-	rjmp waitY
-	sbi ADCSRA, ADIF
-	in r16, ADCH
-	andi r16, 0b11000000
-	cpi r16, 0b11000000
-	breq incY
-	cpi r16, 0
-	breq decY
-skipY:
-	rjmp afterXY
-incY:
-	INCSRAM POSY
-	rjmp skipY
-decY:
+	call ADC10
+JOY_DEC_Y:
+	cpi r17, 0b00
+	brne JOY_INC_Y
 	DECSRAM POSY
-	rjmp skipY
-
-afterXY:
+JOY_INC_Y:
+	cpi r17, 0b11
+	brne JOY_LIM
+	INCSRAM POSY
+JOY_LIM:
+	call	LIMITS		; don't fall off world!
+	pop r17
 	pop r16
 	out SREG, r16
 	pop r16
-
-JOY_LIM:
-	call	LIMITS		; don't fall off world!
 	ret
 
 	; ---------------------------------------
@@ -261,6 +247,23 @@ POS_LIM:
 POS_LESS:
 	inc	r16	
 POS_OK:
+	ret
+
+ADC10:
+	out ADMUX, r16
+	ldi r16, (1<<ADEN)
+	ori r16, (1<<ADPS2)|(1<<ADPS1)|(1<<ADPS0)
+	out ADCSRA, r16
+ADC10_CONVERT:
+	in r16, ADCSRA
+	ori r16, (1<<ADSC)
+	out ADCSRA, r16
+ADC10_WAIT:
+	in r16, ADCSRA
+	sbrc r16, ADSC
+	rjmp ADC10_WAIT
+	in r16, ADCL
+	in r17, ADCH
 	ret
 
 	; ---------------------------------------
@@ -329,7 +332,7 @@ HW_INIT:
 	out DDRD, r16
 
 	; Sätt PA0-PA7 input
-	clr r16
+	ldi r16, 0b11111100
 	out DDRA, r16
 	
 	sei			; display on
@@ -371,6 +374,7 @@ WARM:
 	; ---	pop TPOSY
 	; --- Uses r16
 RANDOM:
+/*
 	; -- Spara kontext
 	push r16
 	push r17
@@ -416,6 +420,40 @@ storeX:
 	pop ZL
 	pop r17
 	pop r16
+	ret
+	*/
+
+	clr r0
+	in	r16,SPH
+	mov	ZH,r16
+	in	r16,SPL
+	mov	ZL,r16
+	lds	r16,SEED
+	mov r17, r16
+	andi r16, 0b00000111
+	andi r17, 0b00001110
+	lsr r17
+	; r16 for TPOSX
+	; r17 for TPOSY
+	cpi r16, 4
+	brlt NORMAL_X
+	subi r16, 4
+NORMAL_X:
+	cpi r17, 4
+	brlt NORMAL_Y
+	subi r17, 4
+NORMAL_Y:
+	ldi r18, 2
+	add r16, r18
+	ldi r18, 3
+	; add r16 to highest r0 in stack
+	add ZL, r18
+	adc ZH, r0
+	st Z, r16
+	ldi r18, 1
+	add ZL, r18
+	adc ZH, r0
+	st Z, r17
 	ret
 
 
