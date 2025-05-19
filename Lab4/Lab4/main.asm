@@ -4,8 +4,6 @@
 ; Created: 2025-05-14 13:23:48
 ; Author : andan346
 ;
-; TODO: 1: förstå RANDOM, möjlig omskrivning.
-;		2: fixa BEEP
 
 
 	.equ	VMEM_SZ     = 5		; #rows on display
