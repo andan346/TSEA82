@@ -13,8 +13,8 @@
 	.equ	AD_CHAN_Y   = 1		; ADC1=PA1, PORTA bit 1 Y-led
 	.equ	GAME_SPEED  = 70	; inter-run delay (millisecs)
 	.equ	PRESCALE    = 3		; AD-prescaler value
-	.equ	BEEP_PITCH  = 20	; Victory beep pitch
-	.equ	BEEP_LENGTH = 100	; Victory beep length
+	.equ	BEEP_PITCH  = 30	; Victory beep pitch
+	.equ	BEEP_LENGTH = 250	; Victory beep length
 	
 	; ---------------------------------------
 	; --- Memory layout in SRAM
@@ -71,18 +71,18 @@ RUN:
 	call	UPDATE
 
 ; --- Delay ---
-	ldi r16, GAME_SPEED
-	call DELAY_MS
+	ldi r16,GAME_SPEED
+	call	DELAY_MS
 
 ; --- Träff? ---
-	lds r16, POSX
-	lds r17, TPOSX
-	cp r16, r17
+	lds  r16, POSX
+	lds  r17, TPOSX
+	cp   r16, r17
 	brne NO_HIT
 
-	lds r16, POSY
-	lds r17, TPOSY
-	cp r16, r17
+	lds  r16, POSY
+	lds  r17, TPOSY
+	cp   r16, r17
 	brne NO_HIT	
 
 ; --- Träff ---
@@ -322,7 +322,7 @@ HW_INIT:
     ldi r16, (1<<ISC01) | (1<<ISC00)
     out MCUCR, r16
 
-	; Sätt PB0-PB7 output
+	; Sätt PB0-PB7 output (PB0-PB6 display, PB7 högtalare)
 	ldi r16, $FF
 	out DDRB, r16
 
@@ -331,7 +331,7 @@ HW_INIT:
 	ldi r16, 0b00111000
 	out DDRD, r16
 
-	; Sätt PA0-PA7 input
+	; Sätt PA0-PA7 input ???????
 	ldi r16, 0b11111100
 	out DDRA, r16
 	
@@ -374,86 +374,42 @@ WARM:
 	; ---	pop TPOSY
 	; --- Uses r16
 RANDOM:
-/*
-	; -- Spara kontext
-	push r16
-	push r17
-	push ZL
-	push ZH
-
-	; -- Kopiera stackpekare till Z
+	clr r0
+	; Kopiera stackpekare till Z-pekare
 	in	r16, SPH
 	mov	ZH, r16
 	in	r16, SPL
 	mov	ZL, r16
 
-	; --- Flytta Z utanför stackpeckaren för bättre "slumpmässighet"
-	inc ZL
-	inc ZL
-	inc ZL
-
-	; -- Läs SEED
+	; Kopiera SEED till r16 och r17
 	lds	r16, SEED
-
-	; -- TPOSY [0..4]
-	mov  r17, r16
-	andi r17, 7		; [0..7]
-	cpi  r17, 5		
-	brlt storeY
-	subi r17, 3		; [0..4]
-storeY:
-	st   Z+, r17
-
-	; -- TPOSX [2..6]
-	mov  r17, r16
-	rol  r17		; rotera SEED för att få ett annorlunda tal
-	andi r17, 7		; [0..7]
-	cpi  r17, 5
-	brlt storeX
-	subi r17, 4		; [0..4]
-storeX:
-	subi r17, -2	; [2..6]
-	st   Z, r17
-
-	; -- Återställ kontext
-	pop ZH
-	pop ZL
-	pop r17
-	pop r16
-	ret
-	*/
-
-	clr r0
-	in	r16,SPH
-	mov	ZH,r16
-	in	r16,SPL
-	mov	ZL,r16
-	lds	r16,SEED
 	mov r17, r16
+	; Sätt r16 och r17 till olika delar av SEED
 	andi r16, 0b00000111
 	andi r17, 0b00001110
 	lsr r17
-	; r16 for TPOSX
-	; r17 for TPOSY
-	cpi r16, 4
-	brlt NORMAL_X
-	subi r16, 4
+	; Normalisera värdena på X och Y (0..7 => 0..4)
 NORMAL_X:
-	cpi r17, 4
+	cpi r16, 5
 	brlt NORMAL_Y
-	subi r17, 4
+	subi r16, 4
 NORMAL_Y:
-	ldi r18, 2
-	add r16, r18
+	cpi r17, 5
+	brlt NORMAL_DONE
+	subi r17, 4
+NORMAL_DONE:
+	; Justera X (0..4 => 2..6)
+	subi r16, -2
+
+	; Lägg X och Y rätt på stacken
 	ldi r18, 3
-	; add r16 to highest r0 in stack
 	add ZL, r18
 	adc ZH, r0
-	st Z, r16
+	st Z, r16 ; X
 	ldi r18, 1
 	add ZL, r18
 	adc ZH, r0
-	st Z, r17
+	st Z, r17 ; Y
 	ret
 
 
@@ -479,27 +435,24 @@ eraseLoop:
 	; ---------------------------------------
 	; --- BEEP(r16) r16 half cycles of BEEP-PITCH
 BEEP:
-	lsr r16
-BEEP_LOOP:
-	sbi PORTB, 7
-	rcall BEEP_DELAY
-	dec r16
-	brne BEEP_LOOP
-	cbi PORTB, 7
-    ret
+    ; Toggla högtalarpinne
+    in  r18, PORTB
+    ldi r19, (1<<PB7)
+    eor r18, r19
+    out PORTB, r18
+
+    ; Vänta BEEP_PITCH cykler
+    ldi r18, BEEP_PITCH
 BEEP_DELAY:
-	push r17
-	ldi r17, BEEP_PITCH
-dly_H:
-	dec r17
-	brne dly_H
-	cbi PORTB, 7
-	ldi r17, BEEP_PITCH
-dly_L:
-	dec r17
-	brne dly_L
-	pop r17
-	ret
+    nop
+    dec r18
+    brne BEEP_DELAY
+
+    ; En halvcykel klar
+    dec r16
+    brne BEEP
+
+    ret
 
 	; ---------------------------------------
 	; --- DELAY_MS(r16) väntar r16 ms.
