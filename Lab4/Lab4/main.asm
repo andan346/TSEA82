@@ -111,7 +111,7 @@ MUX:
 
 	; --- Läs LINE
 	lds r16, LINE
-	
+
 	; --- Släck DISP[LINE]
 	; Välj rad
 	mov  r17, r16			; r17 = LINE
@@ -309,10 +309,6 @@ SETBIT_END:
 	; --- Uses r16
 HW_INIT:
 
-;*** 	Konfigurera hårdvara och MUX-avbrott enligt ***
-;*** 	ditt elektriska schema. Konfigurera 		***
-;*** 	flanktriggat avbrott på INT0 (PD2).			***
-
 	; Initiera INT0
 	ldi	r16, (1<<INT0)
 	out	GICR, r16
@@ -328,10 +324,6 @@ HW_INIT:
 	;		 PD76543210
 	ldi r16, 0b00111000
 	out DDRD, r16
-
-	; Sätt PA0-PA7 input ???????
-	ldi r16, 0b11111100
-	out DDRA, r16
 	
 	sei			; display on
 	ret
@@ -400,14 +392,8 @@ NORMAL_DONE:
 	subi r16, -2
 
 	; Lägg X och Y rätt på stacken
-	ldi r18, 3
-	add ZL, r18
-	adc ZH, r0
-	st Z, r16 ; X
-	ldi r18, 1
-	add ZL, r18
-	adc ZH, r0
-	st Z, r17 ; Y
+	std Z+3, r16 ; X
+	std Z+4, r17 ; Y
 	ret
 
 

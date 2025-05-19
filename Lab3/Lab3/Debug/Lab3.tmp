@@ -1,0 +1,37 @@
+<ASSEMBLER_INFO>
+ <VERSION>2.2.8</VERSION>
+ <DEVICE>"ATmega16A"</DEVICE>
+ <WORKING_DIR>X:\Documents\TSEA82\Lab3\Lab3\Debug</WORKING_DIR>
+ <INCLUDE_PATH>
+  <DIR>C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\avrasm\inc</DIR>
+  <DIR>C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avrassembler\Include</DIR>
+  <DIR></DIR>
+ </INCLUDE_PATH>
+ <SOURCE_FILE>X:\Documents\TSEA82\Lab3\Lab3\main.asm</SOURCE_FILE>
+ <INCLUDED_FILES>
+  <FILE>C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATmega_DFP\1.7.374\avrasm\inc\m16Adef.inc</FILE>
+ </INCLUDED_FILES>
+ <OBJECT_FILES>
+  <FILE>X:\Documents\TSEA82\Lab3\Lab3\Debug\Lab3.obj</FILE>
+ </OBJECT_FILES>
+ <HEX_FILES>
+  <FILE>Lab3.hex</FILE>
+ </HEX_FILES>
+ <OUTPUT_FILES>
+  <FILE>Lab3.map</FILE>
+  <FILE>Lab3.lss</FILE>
+ </OUTPUT_FILES>
+ <LABELS>
+  <TIME><FILE>X:\Documents\TSEA82\Lab3\Lab3\main.asm</FILE><LINE>11</LINE></TIME>
+  <POS><FILE>X:\Documents\TSEA82\Lab3\Lab3\main.asm</FILE><LINE>12</LINE></POS>
+  <MAIN><FILE>X:\Documents\TSEA82\Lab3\Lab3\main.asm</FILE><LINE>41</LINE></MAIN>
+  <MUX><FILE>X:\Documents\TSEA82\Lab3\Lab3\main.asm</FILE><LINE>69</LINE></MUX>
+  <BCD><FILE>X:\Documents\TSEA82\Lab3\Lab3\main.asm</FILE><LINE>120</LINE></BCD>
+  <SEGTAB><FILE>X:\Documents\TSEA82\Lab3\Lab3\main.asm</FILE><LINE>25</LINE></SEGTAB>
+  <CLEAR_TIME><FILE>X:\Documents\TSEA82\Lab3\Lab3\main.asm</FILE><LINE>29</LINE></CLEAR_TIME>
+  <CLEAR_LOOP><FILE>X:\Documents\TSEA82\Lab3\Lab3\main.asm</FILE><LINE>34</LINE></CLEAR_LOOP>
+  <MAIN_LOOP><FILE>X:\Documents\TSEA82\Lab3\Lab3\main.asm</FILE><LINE>65</LINE></MAIN_LOOP>
+  <BCD_LOOP><FILE>X:\Documents\TSEA82\Lab3\Lab3\main.asm</FILE><LINE>135</LINE></BCD_LOOP>
+  <BCD_EXIT><FILE>X:\Documents\TSEA82\Lab3\Lab3\main.asm</FILE><LINE>157</LINE></BCD_EXIT>
+ </LABELS>
+</ASSEMBLER_INFO>

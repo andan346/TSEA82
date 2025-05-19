@@ -5,135 +5,161 @@
 ; Author : andan346
 ;
 
-; ----- DATA SEGMENT ----- ;
-	.dseg
-	.org SRAM_START
-TIME:	.byte 4		; TIME+0 = sek, TIME+1 = 10sek, TIME+2 = min, TIME+3 = 10min
-POS:	.byte 1
+; --- DATA SEGMENT
+.dseg
+.org SRAM_START
+TIME: .byte 4
+POS:  .byte 1
 
-; ----- CODE SEGMENT ----- ;
-	.cseg
-		.org $0000
-	jmp	MAIN
-		.org $0002	; INT0 (PD2 -> MUX @ 1kHz)
-	jmp	MUX
-		.org $0004	; INT1 (PD3 -> BCD @ 1Hz)
-	jmp	BCD
-		.org INT_VECTORS_SIZE
+; --- CODE SEGMENT
+.cseg
+.org $0000
+	jmp MAIN
+.org $0002 ; INT0
+	jmp MUX
+.org $0004 ; INT1
+	jmp BCD
+.org INT_VECTORS_SIZE
 
-; ----- SEGMENT TABLE ----- ;
-SEGTAB:
-	.db 0x3F,0x06,0x5B,0x4F,0x66,0x6D,0x7D,0x07,0x7F,0x6F ; (tack chatgpt)
+; --- TABLES
+SEGTAB: 
+	.db $3F,$06,$5B,$4F,$66,$6D,$7D,$07,$7F,$6F
 
-; ----- MAIN ----- ;
+; --- CLEAR TIME
+CLEAR_TIME:
+	clr r18
+	ldi r17, 4 ; TIME = 4 bytes
+	ldi XL, LOW(TIME)
+	ldi XH, HIGH(TIME)
+CLEAR_LOOP:
+	st X+, r18
+	dec r17
+	brne CLEAR_LOOP
+	ret
+
+; --- MUX
 MAIN:
-	; Init SP
-	ldi	r16, HIGH(RAMEND)
-	out	SPH, r16
-	ldi r16, LOW(RAMEND)
-	out	SPL, r16
+	; Initiera hårdvara
+	ldi r18, $FF
+	out DDRA, r18 ; Väljer segment
+	out DDRB, r18 ; Väljer display
 
-	; Init interrupts
-	ldi	r16, (1<<ISC01)|(1<<ISC00)|(1<<ISC11)|(1<<ISC10) ; Stigande flank
-    out	MCUCR, r16
+	; Initiera stackpekare
+	ldi r18, HIGH(RAMEND)
+	out SPH, r18
+	ldi r18, LOW(RAMEND)
+	out SPL, r18
 
-    ldi	r16, (1<<INT0)|(1<<INT1)
-    out	GICR, r16
+	; Nollställ TIME
+	rcall CLEAR_TIME
 
-	; Enable interrupts globally
-	sei
+	; Initiera avbrott på INT0, INT1
+	ldi r18,(1<<ISC01)|(1<<ISC00)|(1<<ISC11)|(1<<ISC10) ; Stigande flank
+	out MCUCR,r18
+
+	ldi r18,(1<<INT1)|(1<<INT0)
+	out GICR,r18
+	
+	sei ; enable interrupts
 
 MAIN_LOOP:
 	jmp MAIN_LOOP
 
-; ----- MUX ----- ;
+; --- MUX
 MUX:
 	; Spara kontext
-	push r0
-	push r16
-	push r17
 	push r18
+	in r18, SREG
+	push r18
+	push XL
+	push XH
 
-	; 0-register
-	clr r0
-
-	; Hämta POS (0..3)
-	lds  r16, POS
-	andi r16, 3
-
-	; Sätt PORTB till POS
-	out PORTB, r16
-
-	; Pekare till TIME + POS
-	ldi ZH, HIGH(TIME)
-    ldi ZL, LOW(TIME)
-	add	ZL, r16
-	adc ZH, r0
-
-	ld	r17, Z ; BCD-siffra
-
-	; Pekare till SEGTAB + BCD
-	ldi	XH, HIGH(SEGTAB)
-	ldi	XL, LOW(SEGTAB)
-	add XL, r17
-	adc XH, r0
-
-	ld r18, X ; Segmentkod
-
-	; Sätt PORTA tll segmentkod
+	clr r18
 	out PORTA, r18
 
-	; Nästa position
-	inc r16
-	sts POS, r16
+	; Ladda r18 med POS
+	ldi XL, LOW(POS)
+	ldi XH, HIGH(POS)
+	ld r18, X
+
+	; Sätt PORTB = POS
+	out PORTB, r18
+
+	; Ladda r18 med TIME + POS
+	ldi XL, LOW(TIME)
+	ldi XH, HIGH(TIME)
+	add XL, r18
+	ld r18, X
+
+	; Ladda r18 med segmentet i TIME + POS
+	ldi ZL, LOW(SEGTAB*2)
+	ldi ZH, HIGH(SEGTAB*2)
+	add ZL, r18
+	lpm r18, Z
+
+	; Sätt PORTA = SEGTAB[TIME+POS]
+	out PORTA, r18
+	
+	; Inkrementera POS
+	ldi XL, LOW(POS)
+	ldi XH, HIGH(POS)
+	ld r18, X 
+	inc r18
+	andi r18, 0b11
+	st X, r18
 
 	; Återställ kontext
-	pop	r18
-	pop r17
-	pop	r16
-	pop r0
-
+	pop XH
+	pop XL
+	pop r18
+	out SREG, r18
+	pop r18
 	reti
 
-; ----- BCD ----- ;
+; --- BCD
 BCD:
 	; Spara kontext
-	push r16
 	push r17
+	push r18
+	in r18, SREG
+	push r18
+	push XL
+	push XH
 
-	; Pekare till TIME
-	ldi ZH, HIGH(TIME)
-	ldi ZL, LOW(TIME)
+	; Ladda X med TIME
+	ldi XL, LOW(TIME)
+	ldi XH, HIGH(TIME)
 
-	; Nollställ räknaren
-	clr r17
-
+	; Loopa r17 = 2 gånger
+	ldi r17, 2
 BCD_LOOP:
-	; Läs TIME och inkrementera siffer-värdet
-	ld r16, Z
-	inc r16
-	cpi r16, 10
-	brlt BCD_STORE
-	; Nollställ siffer-värdet
-	clr r16
-	st Z, r16
-	; Gå till nästa siffra på displayen
-	inc r17
-	cpi r17, 4
-	brlt BCD_NEXT
-	rjmp BCD_DONE
+	; Inkrementera ental
+	ld r18, X
+	inc r18
+	st X, r18
+	cpi r18, 10 ; har nått 10?
+	brne BCD_EXIT
+	; Nollställ och gå till nästa position
+	clr r18
+	st X+, r18
+	; Inkrementera tiotal
+	ld r18, X
+	inc r18
+	st X, r18
+	cpi r18, 6 ; har nått 6?
+	brne BCD_EXIT
+	; Nollställ och gå till nästa position
+	clr r18
+	st X+, r18
 
-BCD_NEXT:
-	; Flytta Z-pekaren frammåt (Z+1 = TIME+1)
-	adiw ZL, 1
-	rjmp BCD_LOOP
-
-BCD_STORE:
-	; Sparar det nya siffervärdet i (Z = TIME)
-	st Z, r16
-
-BCD_DONE:
+	dec r17
+	brne BCD_LOOP
+BCD_EXIT:
+	; Återställ kontext
+	pop XH
+	pop XL
+	pop r18
+	out SREG, r18
+	pop r18
 	pop r17
-	pop	r16
-
 	reti
